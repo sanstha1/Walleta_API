@@ -45,7 +45,7 @@ const sendOtpEmail = async (email, otp, type = "signup") => {
     html: `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 40px; background-color: #ffffff; border: 1px solid #f0f0f0; border-radius: 12px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #1A73E8; margin: 0; font-size: 28px;">Walleta</h1>
+        <h1 style="color: #01796F; margin: 0; font-size: 28px;">Walleta</h1>
         <p style="color: #666; font-size: 14px; margin-top: 5px;">Your Smart Wallet Companion</p>
       </div>
 
@@ -55,7 +55,7 @@ const sendOtpEmail = async (email, otp, type = "signup") => {
       </p>
 
       <div style="text-align: center; margin: 40px 0;">
-        <div style="display: inline-block; letter-spacing: 8px; font-size: 36px; font-weight: bold; color: #1A73E8; background: #E8F0FE; padding: 15px 30px; border-radius: 8px; border: 2px dashed #1A73E8;">
+        <div style="display: inline-block; letter-spacing: 8px; font-size: 36px; font-weight: bold; color: #01796F; background: #B0C4DE; padding: 15px 30px; border-radius: 8px; border: 2px dashed #01796F;">
           ${otp}
         </div>
       </div>
