@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/user.js');
 const Transaction = require('../models/transaction.model.js');
 const Budget = require('../models/budget.model.js');
 const { sendNotification } = require("../utils/notification.js");
@@ -17,50 +17,28 @@ const getUserByEmail = async (email) => {
     const normalizedEmail = email?.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
-      console.warn('[getUserByEmail] No user found for:', normalizedEmail);
       return { uid: null, fcmToken: null };
     }
-    console.log('[getUserByEmail] ✅ Found user, fcmToken:', user.fcmToken ? 'present' : 'missing');
     return {
       uid:      user.firebaseUid ?? null,
       fcmToken: user.fcmToken    ?? null,
     };
   } catch (err) {
-    console.error('[getUserByEmail] ❌', err.message);
     return { uid: null, fcmToken: null };
   }
 };
 
-
 const checkAndSendBudgetAlert = async (budget, newSpent, email) => {
-  console.log('[BudgetAlert] checking:', {
-    id: budget._id,
-    alertsEnabled: budget.alertsEnabled,
-    alertSent: budget.alertSent,
-    newSpent,
-    limit: budget.limitAmount,
-    threshold: budget.alertThreshold,
-  });
-
-  if (!budget.alertsEnabled) {
-    console.log('[BudgetAlert] skipped — alerts disabled');
-    return;
-  }
-
-  if (budget.alertSent) {
-    console.log('[BudgetAlert] skipped — alert already sent this period');
-    return;
-  }
+  if (!budget.alertsEnabled) return;
+  if (budget.alertSent) return;
 
   const threshold = (budget.alertThreshold / 100) * budget.limitAmount;
-  console.log('[BudgetAlert] newSpent:', newSpent, '| threshold:', threshold);
 
   if (newSpent >= threshold) {
     const budgetType = budget.category ? `${budget.category} category` : 'overall';
     const percentageUsed = Math.round((newSpent / budget.limitAmount) * 100);
 
     const { fcmToken } = await getUserByEmail(email);
-    console.log('[BudgetAlert] fcmToken:', fcmToken ? 'found ✅' : 'missing ❌');
 
     if (fcmToken) {
       try {
@@ -76,19 +54,15 @@ const checkAndSendBudgetAlert = async (budget, newSpent, email) => {
             limit:    String(budget.limitAmount),
           },
         });
-        console.log('[BudgetAlert] ✅ Notification sent');
       } catch (notifErr) {
-        console.error('[BudgetAlert] ❌ sendNotification failed:', notifErr.message);
+        console.error('[BudgetAlert] sendNotification failed:', notifErr.message);
       }
     }
 
-    // FIX: use findByIdAndUpdate to guarantee the write
     await Budget.findByIdAndUpdate(budget._id, { $set: { alertSent: true } });
-    console.log('[BudgetAlert] alertSent marked true for', budget._id);
   }
 };
 
-// FIX: reset alertSent at the start of each new month
 const resetAlertSentIfNewMonth = async (budget, currentMonthYear) => {
   if (budget.alertSentMonth && budget.alertSentMonth !== currentMonthYear) {
     await Budget.findByIdAndUpdate(budget._id, {
@@ -106,7 +80,6 @@ const updateBudgetsForTransaction = async (email, category, amount, isIncome) =>
   const budgetMonth = getCurrentMonthYear();
 
   try {
-    
     const overallBudget = await Budget.findOne({
       email: normalizedEmail,
       monthYear: budgetMonth,
@@ -118,20 +91,16 @@ const updateBudgetsForTransaction = async (email, category, amount, isIncome) =>
 
       const result = await Budget.findByIdAndUpdate(
         overallBudget._id,
-        { 
+        {
           $inc: { spent: amount },
           $set: { alertSentMonth: budgetMonth },
         },
-        { new: true } // FIX: get the updated doc back
+        { new: true }
       );
 
-      console.log('[Transaction] overall budget spent after update:', result.spent);
       await checkAndSendBudgetAlert(freshOverall, result.spent, normalizedEmail);
-    } else {
-      console.log('[Transaction] no overall budget found for', budgetMonth);
     }
 
-    // ── Category budget ─────────────────────────────────────────
     const categoryBudget = await Budget.findOne({
       email: normalizedEmail,
       monthYear: budgetMonth,
@@ -150,18 +119,14 @@ const updateBudgetsForTransaction = async (email, category, amount, isIncome) =>
         { new: true }
       );
 
-      console.log('[Transaction] category budget spent after update:', result.spent);
       await checkAndSendBudgetAlert(freshCategory, result.spent, normalizedEmail);
-    } else {
-      console.log('[Transaction] no category budget for', category, 'in', budgetMonth);
     }
   } catch (error) {
-    console.error('[updateBudgets] ❌ Error:', error.message);
+    console.error('[updateBudgets] Error:', error.message);
   }
 };
 
 exports.addTransaction = async (req, res) => {
-  console.log('🔍 addTransaction called');
   try {
     const { title, amount, category, emoji, isIncome, email } = req.body;
     const normalizedEmail = email?.trim().toLowerCase();
@@ -178,7 +143,6 @@ exports.addTransaction = async (req, res) => {
     const savedTransaction = await newTransaction.save();
 
     const { uid, fcmToken } = await getUserByEmail(normalizedEmail);
-    console.log('🔑 fcmToken found:', fcmToken ? 'YES ✅' : 'NO ❌');
 
     const prefix = isIncome ? '💰 Income' : '💸 Expense';
     const sign   = isIncome ? '+' : '-';
@@ -198,14 +162,14 @@ exports.addTransaction = async (req, res) => {
         },
       });
     } catch (notifErr) {
-      console.error('[addTransaction] transaction notification failed:', notifErr.message);
+      console.error('[addTransaction] notification failed:', notifErr.message);
     }
 
     await updateBudgetsForTransaction(normalizedEmail, category, amount, isIncome);
 
     res.status(201).json(savedTransaction);
   } catch (error) {
-    console.error("DATABASE SAVE ERROR:", error.message);
+    console.error('[addTransaction] error:', error.message);
     if (!res.headersSent) {
       res.status(500).json({ message: "Database Error", details: error.message });
     }
@@ -221,10 +185,9 @@ exports.getTransactions = async (req, res) => {
     }
 
     const transactions = await Transaction.find({ email }).sort({ createdAt: -1 });
-    console.log(`Success: Found ${transactions.length} items for ${email}`);
     res.status(200).json(transactions);
   } catch (error) {
-    console.error("FETCH ERROR:", error.message);
+    console.error('[getTransactions] error:', error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

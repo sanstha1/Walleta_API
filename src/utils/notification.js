@@ -16,7 +16,7 @@ const sendNotification = async ({ token, title, body, userId, type = 'system', m
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     } catch (err) {
-      console.error('[NOTIFICATION] ❌ Firestore write failed:', err.message);
+      console.error('[NOTIFICATION]  Firestore write failed:', err.message);
     }
   }
 
@@ -33,10 +33,10 @@ const sendNotification = async ({ token, title, body, userId, type = 'system', m
       android: { priority: 'high', notification: { sound: 'default' } },
       apns:    { payload: { aps: { sound: 'default' } } },
     });
-    console.log('[NOTIFICATION] ✅ Sent:', response);
+    console.log('[NOTIFICATION]  Sent:', response);
     return response;
   } catch (err) {
-    console.error('[NOTIFICATION] ❌ FCM failed:', err.message);
+    console.error('[NOTIFICATION]  FCM failed:', err.message);
   }
 };
 

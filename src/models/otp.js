@@ -14,5 +14,5 @@ const otpSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ❌ NO TTL INDEX HERE
+
 module.exports = mongoose.model("Otp", otpSchema);

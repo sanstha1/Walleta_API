@@ -13,7 +13,7 @@ const {
   verifyOtpSchema,
   forgotSchema,
   resetPasswordSchema,
-} = require("../validators/auth.validator");
+} = require("../validators/auth.validator.js");
 
 const db = admin.firestore();
 
@@ -37,36 +37,6 @@ const upsertFirestoreUser = async (docId, payload) => {
   }
 };
 
-const buildPlanInfo = (user) => {
-  const now = new Date();
-  let isActive         = false;
-  let secondsRemaining = null;
-
-  if (user.plan !== "free") {
-    if (!user.planExpiryDate) {
-      isActive         = true;
-      secondsRemaining = null;
-    } else {
-      secondsRemaining = Math.max(
-        0,
-        Math.floor((user.planExpiryDate - now) / 1000)
-      );
-      isActive = secondsRemaining > 0;
-    }
-  }
-
-  return {
-    plan:            user.plan,
-    isPremium:       user.isPremium,
-    isActive,
-    planStartDate:   user.planStartDate  || null,
-    planExpiryDate:  user.planExpiryDate || null,
-    secondsRemaining,
-  };
-};
-
-exports.buildPlanInfo = buildPlanInfo;
-
 exports.signup = async (req, res) => {
   let newUser;
   try {
@@ -86,8 +56,6 @@ exports.signup = async (req, res) => {
       passwordHash,
       authProvider: "email",
       isVerified:   false,
-      plan:         "free",
-      isPremium:    false,
     });
 
     await upsertFirestoreUser(newUser._id.toString(), {
@@ -166,7 +134,6 @@ exports.login = async (req, res) => {
           name:         user.name,
           email:        user.email,
           profileImage: user.profileImage,
-          ...buildPlanInfo(user),
         },
       },
     });
@@ -196,8 +163,6 @@ exports.googleSignIn = async (req, res) => {
         firebaseUid:  decoded.uid,
         authProvider: "google",
         isVerified:   true,
-        plan:         "free",
-        isPremium:    false,
       });
     } else {
       let dirty = false;
@@ -225,7 +190,6 @@ exports.googleSignIn = async (req, res) => {
           email:        user.email,
           profileImage: user.profileImage,
           authProvider: user.authProvider,
-          ...buildPlanInfo(user),
         },
       },
     });
@@ -413,7 +377,6 @@ exports.resetPassword = async (req, res) => {
           name:         updatedUser.name,
           email:        updatedUser.email,
           profileImage: updatedUser.profileImage,
-          ...buildPlanInfo(updatedUser),
         },
       },
     });

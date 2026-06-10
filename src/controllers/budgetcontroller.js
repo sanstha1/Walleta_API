@@ -167,7 +167,7 @@ exports.createBudget = async (req, res) => {
       });
     }
 
-    // 2. Premium check before any DB writes
+    
     if (alertsEnabled) {
       const user = await User.findOne({ email: normalizedEmail });
       if (!user || !user.isPremium) {
