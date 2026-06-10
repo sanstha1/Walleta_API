@@ -3,7 +3,7 @@ const router = express.Router();
 const Transaction = require("../models/transaction.model.js");
 const Category = require("../models/category.model.js");
 const categoryController = require('../controllers/categorycontroller.js');
-const transactionController = require('../controllers/transaction.controller.js');
+const transactionController = require('../controllers/transactioncontroller.js');
 
 router.get("/categories", categoryController.getAllCategories);
 

@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const connectDB = require("./config/db");
+const connectDB = require("./src/config/db");
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./firebase-service-account.json");
@@ -13,11 +13,10 @@ if (!admin.apps.length) {
   admin.app();
 }
 
-const authRoutes = require("./routes/auth.routes.js");
-const transactionRoutes = require("./routes/transaction.routes.js");
-const paymentRoutes = require("./routes/payment.routes.js");
-const budgetRoutes = require("./routes/budget.routes.js");
-const featureRoutes = require("./routes/feature.routes.js");
+const authRoutes = require("./src/routes/auth.routes.js");
+const transactionRoutes = require("./src/routes/transaction.routes.js");
+const budgetRoutes = require("./src/routes/budget.routes.js");
+const featureRoutes = require("./src/routes/feature.routes.js");
 
 const app = express();
 
@@ -32,7 +31,6 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/payment", paymentRoutes);
 app.use("/api", transactionRoutes);
 app.use("/api", budgetRoutes);
 app.use("/api", featureRoutes);

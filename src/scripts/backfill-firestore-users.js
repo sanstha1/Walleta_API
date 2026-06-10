@@ -28,9 +28,9 @@ async function backfill() {
         await User.findByIdAndUpdate(user._id, { firebaseUid: firebaseUser.uid });
       }
 
-      console.log(`✅ ${user.email}`);
+      console.log(`${user.email}`);
     } catch (err) {
-      console.error(`❌ ${user.email}: ${err.message}`);
+      console.error(`${user.email}: ${err.message}`);
     }
   }
 
@@ -68,9 +68,9 @@ async function backfill() {
         await User.findByIdAndUpdate(user._id, { firebaseUid: firebaseUser.uid });
       }
 
-      console.log(`✅ ${user.email}`);
+      console.log(`${user.email}`);
     } catch (err) {
-      console.error(`❌ ${user.email}: ${err.message}`);
+      console.error(`${user.email}: ${err.message}`);
     }
   }
 

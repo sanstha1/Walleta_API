@@ -1,6 +1,6 @@
 const express             = require("express");
 const router              = express.Router();
-const auth                = require("../controllers/auth.controller");
+const auth                = require("../controllers/authcontroller");
 const { protect }         = require("../middleware/auth.middleware");
 const { uploadProfilePicture } = require("../config/multer");
 
